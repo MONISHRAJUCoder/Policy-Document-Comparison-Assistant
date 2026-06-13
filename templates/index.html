@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PolicyLens — Regulatory Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">⚖</span>
+          <span class="logo-text">PolicyLens</span>
+          <span class="logo-tag">Regulatory Intelligence</span>
+        </div>
+        <nav class="header-nav">
+          <a href="#input-section">Compare</a>
+          <a href="#results-section" id="nav-results" style="display:none">Results</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="hero-eyebrow">AI-Powered Policy Analysis</p>
+        <h1 class="hero-title">From Legacy to Compliant.<br /><em>Understand every change.</em></h1>
+        <p class="hero-sub">Upload your legacy and modernized policy documents. PolicyLens maps every difference, scores compliance risk, and explains regulatory impact — powered by Claude AI.</p>
+        <div class="hero-badges">
+          <span class="badge">GDPR</span>
+          <span class="badge">CCPA</span>
+          <span class="badge">HIPAA</span>
+          <span class="badge">SOX</span>
+          <span class="badge">ISO 27001</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Input Section -->
+  <section class="input-section" id="input-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2>Upload Policy Documents</h2>
+        <p>Paste text directly or upload PDF / DOCX / TXT files</p>
+      </div>
+
+      <div class="sample-bar">
+        <span>Try it instantly →</span>
+        <button class="btn-sample" id="loadSampleBtn">Load Sample GDPR Migration</button>
+      </div>
+
+      <form id="compareForm" enctype="multipart/form-data">
+        <div class="docs-grid">
+          <!-- Legacy -->
+          <div class="doc-panel legacy-panel">
+            <div class="panel-header">
+              <span class="panel-badge legacy-badge">Legacy</span>
+              <h3>Original Policy</h3>
+            </div>
+            <div class="upload-zone" id="legacyUploadZone">
+              <input type="file" name="legacy_file" id="legacyFile" accept=".txt,.pdf,.docx" hidden />
+              <button type="button" class="upload-btn" onclick="document.getElementById('legacyFile').click()">
+                <span class="upload-icon">📄</span> Upload File
+              </button>
+              <span class="upload-hint">PDF, DOCX, or TXT</span>
+              <span class="file-name" id="legacyFileName"></span>
+            </div>
+            <div class="divider-or"><span>or paste text</span></div>
+            <textarea name="legacy_text" id="legacyText" class="policy-textarea" placeholder="Paste your legacy policy document here..."></textarea>
+          </div>
+
+          <!-- Modern -->
+          <div class="doc-panel modern-panel">
+            <div class="panel-header">
+              <span class="panel-badge modern-badge">Modernized</span>
+              <h3>Updated Policy</h3>
+            </div>
+            <div class="upload-zone" id="modernUploadZone">
+              <input type="file" name="modern_file" id="modernFile" accept=".txt,.pdf,.docx" hidden />
+              <button type="button" class="upload-btn" onclick="document.getElementById('modernFile').click()">
+                <span class="upload-icon">📄</span> Upload File
+              </button>
+              <span class="upload-hint">PDF, DOCX, or TXT</span>
+              <span class="file-name" id="modernFileName"></span>
+            </div>
+            <div class="divider-or"><span>or paste text</span></div>
+            <textarea name="modern_text" id="modernText" class="policy-textarea" placeholder="Paste your modernized policy document here..."></textarea>
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-primary" id="analyzeBtn">
+            <span class="btn-text">Analyze & Compare</span>
+            <span class="btn-icon">→</span>
+          </button>
+          <p class="submit-note">Analysis typically takes 15–30 seconds</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <p class="loading-title">Analyzing Documents</p>
+      <p class="loading-step" id="loadingStep">Parsing policy structures...</p>
+      <div class="loading-steps">
+        <div class="step-item active" id="step1">📄 Parsing documents</div>
+        <div class="step-item" id="step2">🔍 Computing differences</div>
+        <div class="step-item" id="step3">⚖ Analyzing regulatory impact</div>
+        <div class="step-item" id="step4">📊 Generating report</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <section class="results-section" id="results-section" style="display:none">
+    <div class="container">
+
+      <!-- Score Banner -->
+      <div class="score-banner" id="scoreBanner">
+        <div class="score-item">
+          <span class="score-label">Modernization Score</span>
+          <span class="score-value" id="modernizationScore">—</span>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-item">
+          <span class="score-label">Risk Change</span>
+          <span class="score-value risk-value" id="riskChange">—</span>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-item">
+          <span class="score-label">Lines Changed</span>
+          <span class="score-value" id="linesChanged">—</span>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-item">
+          <span class="score-label">Similarity</span>
+          <span class="score-value" id="similarity">—</span>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <div class="result-card" id="execSummaryCard">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <h2>Executive Summary</h2>
+        </div>
+        <p class="exec-summary-text" id="execSummaryText"></p>
+        <div class="compliance-tags" id="complianceTags"></div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="diff">Diff View</button>
+        <button class="tab-btn" data-tab="regulatory">Regulatory Impact</button>
+        <button class="tab-btn" data-tab="risk">Risk Analysis</button>
+        <button class="tab-btn" data-tab="recommendations">Recommendations</button>
+      </div>
+
+      <!-- Diff View Tab -->
+      <div class="tab-content active" id="tab-diff">
+        <div class="diff-legend">
+          <span class="legend-item"><span class="legend-dot addition"></span> Added</span>
+          <span class="legend-item"><span class="legend-dot deletion"></span> Removed</span>
+          <span class="legend-item"><span class="legend-dot modification"></span> Modified</span>
+          <span class="legend-item"><span class="legend-dot equal"></span> Unchanged</span>
+        </div>
+        <div class="diff-view" id="diffView"></div>
+      </div>
+
+      <!-- Regulatory Impact Tab -->
+      <div class="tab-content" id="tab-regulatory">
+        <div class="regulatory-grid" id="regulatoryGrid"></div>
+      </div>
+
+      <!-- Risk Analysis Tab -->
+      <div class="tab-content" id="tab-risk">
+        <div class="risk-section" id="riskSection"></div>
+      </div>
+
+      <!-- Recommendations Tab -->
+      <div class="tab-content" id="tab-recommendations">
+        <div class="recommendations-section" id="recommendationsSection"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Error toast -->
+  <div class="toast error-toast" id="errorToast" style="display:none">
+    <span class="toast-icon">⚠</span>
+    <span id="errorMessage"></span>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>PolicyLens — Built with Claude AI · Anthropic · <span id="year"></span></p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
